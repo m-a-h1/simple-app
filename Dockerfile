@@ -1,12 +1,21 @@
-FROM node
+FROM node:16-alpine
+
+RUN apk add dumb-init
 
 ENV MONGO_DB_USERNAME=admin \
-    MONGO_DB_PWD=password
+    MONGO_DB_PWD=password \
+    NODE_ENV=production
 
-RUN mkdir -p /home/app
+RUN mkdir -p /usr/src/app
 
-COPY . /home/app
+WORKDIR /usr/src/app
 
-WORKDIR /home/app
+COPY --chown=node:node . /usr/src/app
 
-CMD ['node', 'server.js']
+RUN npm ci --only=production
+
+USER node
+
+EXPOSE 8080
+
+CMD ["dumb-init", 'node', 'server.js']
